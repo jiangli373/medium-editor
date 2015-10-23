@@ -88,19 +88,10 @@
         createForm: function () {
             var doc = this.document,
                 form = doc.createElement('div'),
-                input = doc.createElement('select'),
-                opt1 = document.createElement('option'),
-                text1 = document.createTextNode('12px'),
-                opt2 = document.createElement('option'),
-                text2 = document.createTextNode('14px'),
-                opt3 = document.createElement('option'),
-                text3 = document.createTextNode('16px'),
-                opt4 = document.createElement('option'),
-                text4 = document.createTextNode('18px'),
-                opt5 = document.createElement('option'),
-                text5 = document.createTextNode('20px'),
-                opt6 = document.createElement('option'),
-                text6 = document.createTextNode('22px');
+                input = doc.createElement('input'),
+                close = doc.createElement('a'),
+                save = doc.createElement('a');
+
             // Font Size Form (div)
             form.className = 'medium-editor-toolbar-form';
             form.id = 'medium-editor-toolbar-form-fontsize-' + this.getEditorId();
@@ -108,44 +99,43 @@
             // Handle clicks on the form itself
             this.on(form, 'click', this.handleFormClick.bind(this));
 
-            //add opt
-            opt1.appendChild(text1);
-            opt1.setAttribute('value', '12');
-            input.appendChild(opt1);
-
-            opt2.appendChild(text2);
-            opt2.setAttribute('value', '14');
-            input.appendChild(opt2);
-
-            opt3.appendChild(text3);
-            opt3.setAttribute('value', '16');
-            input.appendChild(opt3);
-
-            opt4.appendChild(text4);
-            opt1.setAttribute('value', '18');
-            input.appendChild(opt4);
-
-            opt5.appendChild(text5);
-            opt5.setAttribute('value', '20');
-            input.appendChild(opt5);
-
-            opt6.appendChild(text6);
-            opt6.setAttribute('value', '22');
-            input.appendChild(opt6);
-
             // Add font size slider
-
+            input.setAttribute('type', 'range');
+            input.setAttribute('min', '1');
+            input.setAttribute('max', '7');
             input.className = 'medium-editor-toolbar-input';
             form.appendChild(input);
 
             // Handle typing in the textbox
-            this.on(input, 'change', this.handleSelectChange.bind(this));
+            this.on(input, 'change', this.handleSliderChange.bind(this));
+
+            // Add save buton
+            save.setAttribute('href', '#');
+            save.className = 'medium-editor-toobar-save';
+            save.innerHTML = this.getEditorOption('buttonLabels') === 'fontawesome' ?
+                             '<i class="fa fa-check"></i>' :
+                             '&#10003;';
+            form.appendChild(save);
+
+            // Handle save button clicks (capture)
+            this.on(save, 'click', this.handleSaveClick.bind(this), true);
+
+            // Add close button
+            close.setAttribute('href', '#');
+            close.className = 'medium-editor-toobar-close';
+            close.innerHTML = this.getEditorOption('buttonLabels') === 'fontawesome' ?
+                              '<i class="fa fa-times"></i>' :
+                              '&times;';
+            form.appendChild(close);
+
+            // Handle close button clicks
+            this.on(close, 'click', this.handleCloseClick.bind(this));
 
             return form;
         },
 
         getInput: function () {
-            return this.getForm().querySelector('select.medium-editor-toolbar-input');
+            return this.getForm().querySelector('input.medium-editor-toolbar-input');
         },
 
         clearFontSize: function () {
@@ -156,9 +146,13 @@
             });
         },
 
-        handleSelectChange: function () {
+        handleSliderChange: function () {
             var size = this.getInput().value;
-            this.execAction('fontSize', { size: size });
+            if (size === '4') {
+                this.clearFontSize();
+            } else {
+                this.execAction('fontSize', { size: size });
+            }
         },
 
         handleFormClick: function (event) {
